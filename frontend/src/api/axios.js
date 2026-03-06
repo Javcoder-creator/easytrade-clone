@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api'
+  // Render bergan primary URL ni shu yerga qo'ying
+  baseURL: 'https://easytrade-clone.onrender.com/api' 
 });
 
 export default api;
