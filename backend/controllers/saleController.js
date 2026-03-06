@@ -61,20 +61,23 @@ exports.getStats = async (req, res) => {
         let totalProfit = 0;
 
         sales.forEach(sale => {
-            // total_price ni raqamga o'tkazamiz
             const saleTotal = parseFloat(sale.total_price) || 0;
             totalRevenue += saleTotal;
             
-            // Items ichidagi foydani hisoblash
             if (sale.items && Array.isArray(sale.items)) {
                 sale.items.forEach(item => {
-                    const sellPrice = parseFloat(item.price_sell) || 0;
+                    // NOMNI TEKSHIRAMIZ: price_sell bo'lmasa shunchaki price ni oladi
+                    const sellPrice = parseFloat(item.price_sell || item.price) || 0;
                     const supplyPrice = parseFloat(item.supply_price) || 0;
                     const quantity = parseInt(item.qty) || 0;
 
-                    // Agar supplyPrice bo'lmasa, foyda = 0 deb hisoblaymiz (xato bermasligi uchun)
-                    const itemProfit = (sellPrice - supplyPrice) * quantity;
-                    totalProfit += itemProfit;
+                    // Agar tannarx bo'lsa, foydani ayiramiz, bo'lmasa foyda 0
+                    if (supplyPrice > 0) {
+                        totalProfit += (sellPrice - supplyPrice) * quantity;
+                    } else {
+                        // Agar tannarx kiritilmagan bo'lsa, foyda hisoblanmasligi kerak 
+                        // yoki butun sotuvni foyda desak: totalProfit += 0;
+                    }
                 });
             }
         });
@@ -85,7 +88,6 @@ exports.getStats = async (req, res) => {
             totalSalesCount: sales.length
         });
     } catch (error) {
-        console.error("Statistika xatosi:", error);
         res.status(500).json({ message: "Statistikada xato", error: error.message });
     }
 };
