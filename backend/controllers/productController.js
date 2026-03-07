@@ -35,14 +35,14 @@ const Entry = require('../models/Entry');
 
 exports.addStock = async (req, res) => {
     try {
-        const { product_id, quantity, supply_price } = req.body;
+        const { product_id, quantity, price_buy } = req.body;
         
         // 1. Mahsulotni topish
         const product = await Product.findByPk(product_id);
         if (!product) return res.status(404).json({ message: "Mahsulot topilmadi" });
 
         // 2. Kirim tarixini yaratish
-        await Entry.create({ product_id, quantity, supply_price });
+        await Entry.create({ product_id, quantity, price_buy });
 
         // 3. Mahsulot qoldig'ini yangilash
         product.stock_quantity += parseInt(quantity);

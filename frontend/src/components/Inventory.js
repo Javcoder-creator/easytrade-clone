@@ -15,7 +15,7 @@ const Inventory = ({ storeId, onBack }) => {
     const [newProduct, setNewProduct] = useState({
         name: '',
         price_sell: '',
-        supply_price: '',
+        price_buy: '',
         stock_quantity: 0
     });
 
@@ -120,7 +120,7 @@ const Inventory = ({ storeId, onBack }) => {
                             <input placeholder="Mahsulot nomi" required style={modalInput}
                                 onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
                             <input type="number" placeholder="Sotish narxi" required style={modalInput}
-                                onChange={e => setNewProduct({...newProduct, price_sell: e.target.value})} />
+                                onChange={e => setNewProduct({...newProduct, price_buy: e.target.value})} />
                             <input type="number" placeholder="Kirim narxi (Tannarxi)" required style={modalInput}
                                 onChange={e => setNewProduct({...newProduct, supply_price: e.target.value})} />
                             <input type="number" placeholder="Boshlang'ich qoldiq" style={modalInput}
