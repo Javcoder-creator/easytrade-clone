@@ -3,13 +3,12 @@ const Product = require('../models/Product');
 const { Op } = require('sequelize');
 const sequelize = require('../config/db');
 
-// 1. Yangi sotuvni amalga oshirish (Sotish + Foydani hisoblash)
+// 1. YANGI SOTUVNI AMALGA OSHIRISH
 exports.createSale = async (req, res) => {
-    const t = await sequelize.transaction(); // Tranzaksiya: hamma narsa bo'lsa bo'ladi, bo'lmasa qaytadi
+    const t = await sequelize.transaction();
     try {
         const { store_id, items, total_price } = req.body;
 
-        // Items ichiga kelish narxini (supply_price) ham qo'shib saqlaymiz
         const itemsWithSupplyPrice = [];
         
         for (let item of items) {
@@ -22,10 +21,10 @@ exports.createSale = async (req, res) => {
             product.stock_quantity -= item.qty;
             await product.save({ transaction: t });
 
-            // Foydani hisoblash uchun ma'lumotlarni yig'ish
+            // FOYDANI HISOBLASH UCHUN: supply_price o'rniga price_buy ishlatamiz
             itemsWithSupplyPrice.push({
                 ...item,
-                supply_price: product.supply_price || 0 // Mahsulotning kelish narxi
+                supply_price: product.price_buy || 0 // TO'G'IRLANDI: price_buy bazadagi nom
             });
         }
 
@@ -43,7 +42,7 @@ exports.createSale = async (req, res) => {
     }
 };
 
-// 2. Dashboard uchun statistika (Tushum + Sof Foyda)
+// 2. DASHBOARD UCHUN STATISTIKA
 exports.getStats = async (req, res) => {
     try {
         const { store_id } = req.params;
@@ -66,17 +65,13 @@ exports.getStats = async (req, res) => {
             
             if (sale.items && Array.isArray(sale.items)) {
                 sale.items.forEach(item => {
-                    // NOMNI TEKSHIRAMIZ: price_sell bo'lmasa shunchaki price ni oladi
                     const sellPrice = parseFloat(item.price_sell || item.price) || 0;
                     const supplyPrice = parseFloat(item.supply_price) || 0;
                     const quantity = parseInt(item.qty) || 0;
 
-                    // Agar tannarx bo'lsa, foydani ayiramiz, bo'lmasa foyda 0
+                    // Foydani hisoblash: Sotish narxi - Tannarx
                     if (supplyPrice > 0) {
                         totalProfit += (sellPrice - supplyPrice) * quantity;
-                    } else {
-                        // Agar tannarx kiritilmagan bo'lsa, foyda hisoblanmasligi kerak 
-                        // yoki butun sotuvni foyda desak: totalProfit += 0;
                     }
                 });
             }
@@ -92,7 +87,7 @@ exports.getStats = async (req, res) => {
     }
 };
 
-// 3. Barcha sotuvlar tarixini olish
+// 3. BARCHA SOTUVLAR TARIXI
 exports.getSales = async (req, res) => {
     try {
         const { store_id } = req.params;
@@ -106,6 +101,7 @@ exports.getSales = async (req, res) => {
     }
 };
 
+// 4. HAFTALIK GRAFIK UCHUN
 exports.getWeeklySales = async (req, res) => {
     try {
         const { store_id } = req.params;
